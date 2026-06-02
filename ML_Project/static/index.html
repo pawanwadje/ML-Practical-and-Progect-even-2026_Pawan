@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioShield - Smart Crop Pest Monitoring & Diagnostics</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons for modern aesthetic -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fa-solid fa-leaf leaf-icon"></i>
+                <div class="logo-text">
+                    <h1>BioShield AI</h1>
+                    <span>Intelligent Crop Protection</span>
+                </div>
+            </div>
+            <div class="system-status" id="systemStatus">
+                <span class="status-dot green"></span>
+                <span class="status-label">System Active</span>
+                <span class="badge" id="modeBadge">Checking Model...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Stat Cards Section -->
+        <section class="overview-stats" aria-label="Overview Statistics">
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fa-solid fa-microscope"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Total Diagnoses</span>
+                    <h3 id="statTotalDiagnoses">0</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Healthy Index</span>
+                    <h3 id="statHealthyIndex">94.8%</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Active Outbreaks</span>
+                    <h3 id="statActiveOutbreaks">0</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fa-solid fa-database"></i></div>
+                <div class="stat-info">
+                    <span class="stat-title">Pests Cataloged</span>
+                    <h3 id="statPestsCataloged">5 Species</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace: Diagnostics and Results -->
+        <div class="workspace-grid">
+            
+            <!-- Left Side: Diagnostics Input Console -->
+            <section class="panel glass-panel upload-section" aria-labelledby="diagnose-title">
+                <div class="panel-header">
+                    <i class="fa-solid fa-camera-retro"></i>
+                    <h2 id="diagnose-title">Diagnostic Control Station</h2>
+                </div>
+                
+                <div class="upload-tabs">
+                    <button class="tab-btn active" id="uploadTabBtn" onclick="switchUploadMode('upload')">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Image
+                    </button>
+                    <button class="tab-btn" id="cameraTabBtn" onclick="switchUploadMode('camera')">
+                        <i class="fa-solid fa-video"></i> Live Camera Scan
+                    </button>
+                </div>
+
+                <!-- Dropzone Upload Container -->
+                <div class="upload-container active" id="uploadContainer">
+                    <div class="dropzone" id="dropzone">
+                        <input type="file" id="fileInput" accept="image/*" class="file-input">
+                        <i class="fa-regular fa-image upload-icon"></i>
+                        <h3>Drag and drop crop image here</h3>
+                        <p>Supports JPEG, PNG up to 10MB</p>
+                        <button class="btn btn-secondary">Browse Local Files</button>
+                    </div>
+                </div>
+
+                <!-- Live Camera Container -->
+                <div class="upload-container" id="cameraContainer">
+                    <div class="camera-box">
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <canvas id="cameraCanvas" style="display: none;"></canvas>
+                        <div class="camera-overlay">
+                            <div class="scanner-line"></div>
+                        </div>
+                        <div class="camera-fallback" id="cameraFallback">
+                            <i class="fa-solid fa-video-slash"></i>
+                            <p>Camera stream is starting or unavailable.</p>
+                        </div>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="btn btn-secondary" id="startCamBtn" onclick="startCamera()">
+                            <i class="fa-solid fa-power-off"></i> Start Camera
+                        </button>
+                        <button class="btn btn-primary" id="captureBtn" onclick="captureSnapshot()" disabled>
+                            <i class="fa-solid fa-camera"></i> Take Diagnostic Snapshot
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="preview-wrapper" id="previewWrapper" style="display: none;">
+                    <div class="preview-header">
+                        <h4>Selected Specimen</h4>
+                        <button class="clear-btn" id="clearBtn" onclick="resetDiagnostics()">
+                            <i class="fa-solid fa-xmark"></i> Clear
+                        </button>
+                    </div>
+                    <div class="preview-box">
+                        <img id="imagePreview" src="" alt="Selected crop leaf sample">
+                    </div>
+                    <button class="btn btn-primary btn-full-width" id="diagnoseBtn" onclick="runDiagnostics()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Diagnose Crop Health
+                    </button>
+                </div>
+
+                <!-- Loading overlay -->
+                <div class="loader-overlay" id="loaderOverlay" style="display: none;">
+                    <div class="spinner"></div>
+                    <h3>Scanning Foliage...</h3>
+                    <p>Executing neural network feature maps</p>
+                </div>
+            </section>
+
+            <!-- Right Side: Diagnostics Results & Treatment -->
+            <section class="panel glass-panel results-section" aria-labelledby="results-title">
+                <div class="panel-header">
+                    <i class="fa-solid fa-square-poll-horizontal"></i>
+                    <h2 id="results-title">Diagnostic Results & Treatment Plans</h2>
+                </div>
+
+                <!-- Empty State (Shown before any diagnostics) -->
+                <div class="empty-results-state" id="emptyResultsState">
+                    <i class="fa-solid fa-seedling floating-leaf"></i>
+                    <h3>Awaiting Crop Specimen</h3>
+                    <p>Upload a photo or capture a snapshot of the infected crop leaf or stem to begin artificial intelligence diagnostics.</p>
+                </div>
+
+                <!-- Filled Results Container -->
+                <div class="diagnostics-results" id="diagnosticsResults" style="display: none;">
+                    
+                    <!-- Result Summary Hero -->
+                    <div class="results-hero">
+                        <div class="results-metric">
+                            <span class="metric-label">Diagnosis</span>
+                            <h3 id="resultPestName">Aphids</h3>
+                            <span class="scientific-name" id="resultScientificName">Aphididae</span>
+                        </div>
+                        <div class="confidence-container">
+                            <div class="confidence-circle-wrap">
+                                <svg class="confidence-ring" width="100" height="100">
+                                    <circle class="ring-bg" stroke="#1f2c22" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
+                                    <circle class="ring-progress" id="confidenceRingProgress" stroke="#10b981" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
+                                </svg>
+                                <div class="confidence-value" id="resultConfidenceText">95%</div>
+                            </div>
+                            <span class="conf-lbl">Model Confidence</span>
+                        </div>
+                    </div>
+
+                    <!-- Model Inference Mode Info -->
+                    <div class="inference-mode-banner">
+                        <i class="fa-solid fa-gears"></i>
+                        <span id="resultModelMode">Simulated/Fallback Inference</span>
+                    </div>
+
+                    <!-- Tabs for detailed agricultural advice -->
+                    <div class="results-tabs">
+                        <button class="result-tab-btn active" onclick="switchResultTab('overview')">
+                            <i class="fa-solid fa-circle-info"></i> Overview
+                        </button>
+                        <button class="result-tab-btn" onclick="switchResultTab('organic')">
+                            <i class="fa-solid fa-leaf"></i> Organic
+                        </button>
+                        <button class="result-tab-btn" onclick="switchResultTab('chemical')">
+                            <i class="fa-solid fa-flask"></i> Chemical
+                        </button>
+                        <button class="result-tab-btn" onclick="switchResultTab('prevention')">
+                            <i class="fa-solid fa-circle-check"></i> Prevention
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div class="tab-content active" id="tabContent_overview">
+                        <div class="info-section">
+                            <h4>Description</h4>
+                            <p id="resultDescription">A description of the pest will appear here.</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Target Crop Vulnerabilities</h4>
+                            <p id="resultAffectedCrops">Crops affected will be listed here.</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Symptoms Checklist</h4>
+                            <ul class="symptoms-list" id="resultSymptomsList">
+                                <!-- Symptoms list will be populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tabContent_organic">
+                        <h4>Organic & Biological Controls</h4>
+                        <p class="tab-intro-text">These methods employ natural predators, botanical extracts, and physical controls to suppress pests without damaging soil microflora.</p>
+                        <ul class="control-list checklist-green" id="resultOrganicList">
+                            <!-- Organic actions list will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <div class="tab-content" id="tabContent_chemical">
+                        <h4>Chemical Spray Protocols</h4>
+                        <p class="tab-intro-text"><strong class="caution-text">⚠️ Caution:</strong> Apply chemical sprays as a last resort. Always wear protective gear, check weather guidelines, and spray when pollinators are inactive (dusk/dawn).</p>
+                        <ul class="control-list checklist-red" id="resultChemicalList">
+                            <!-- Chemical actions list will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                    <div class="tab-content" id="tabContent_prevention">
+                        <h4>Integrated Prevention & Management</h4>
+                        <p class="tab-intro-text">Cultural and agricultural practices that reduce the risk of future outbreaks and make crops naturally more resilient.</p>
+                        <ul class="control-list checklist-blue" id="resultPreventionList">
+                            <!-- Prevention list will be populated dynamically -->
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Reference Catalog Section -->
+        <section class="panel glass-panel catalog-section" aria-labelledby="catalog-title">
+            <div class="panel-header">
+                <i class="fa-solid fa-book-open"></i>
+                <h2 id="catalog-title">Agronomist Reference Library</h2>
+                <span class="header-subtitle">Browse profile sheets and treatment blueprints for cataloged crop pests</span>
+            </div>
+            
+            <div class="pest-grid" id="pestGrid">
+                <!-- Catalog grid populated dynamically by API -->
+                <div class="loading-catalog">
+                    <div class="spinner small"></div>
+                    <p>Loading pest profiles...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scan History Section -->
+        <section class="panel glass-panel history-section" aria-labelledby="history-title">
+            <div class="panel-header">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <h2 id="history-title">Diagnostic History Log</h2>
+                <button class="clear-history-btn" onclick="clearDiagnosticHistory()" id="clearHistoryBtn" style="display: none;">
+                    <i class="fa-solid fa-trash-can"></i> Clear History
+                </button>
+            </div>
+            <div class="history-list-wrapper">
+                <div class="history-list" id="historyList">
+                    <div class="empty-history-text">No diagnostics ran in this browser session.</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 BioShield Agricultural Intelligence Systems. Active local diagnostic node.</p>
+            <p>Designed for deployment on high-efficiency FastAPI server instances & Google Colab GPU training pipelines.</p>
+        </div>
+    </footer>
+
+    <!-- JS Logic -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

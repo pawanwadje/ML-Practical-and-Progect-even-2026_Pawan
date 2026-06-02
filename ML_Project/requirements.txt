@@ -1,0 +1,16 @@
+# 🌾 BioShield API - Python Dependencies
+
+# Core Web Server & API routing
+fastapi>=0.95.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+
+# Image Preprocessing Utilities
+pillow>=9.5.0
+
+# Deep Learning Frameworks (Optional for CPU-only inference)
+# If you only want to test the Frontend/Backend Dashboard in simulated mode,
+# you can leave these commented out to avoid downloading large PyTorch binaries.
+# If you want to load the trained 'pest_model.pth', uncomment these:
+# torch>=2.0.0
+# torchvision>=0.15.0
